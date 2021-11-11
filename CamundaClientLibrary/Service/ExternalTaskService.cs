@@ -9,12 +9,16 @@ using System.Threading.Tasks;
 using Newtonsoft.Json.Serialization;
 using System.Threading;
 using CamundaClientLibrary.DTO;
+using Common.Logging;
 
 namespace CamundaClientLibrary.Service
 {
 
     public class ExternalTaskService
     {
+
+        private ILog logger = LogManager.GetLogger(typeof(ExternalTaskService));
+
         private CamundaClientHelper helper;
 
         public ExternalTaskService(CamundaClientHelper client)
@@ -41,7 +45,7 @@ namespace CamundaClientLibrary.Service
             bool? locked = null, bool? notLocked = null, bool? withRetriesLeft = null, bool? noRetriesLeft = null, 
             DateTime? lockExpirationAfter = null, DateTime? lockExpirationBefore = null, string activityId = null, 
             string executionId = null, string processInstanceId = null, string processDefinitionId = null, 
-            string tenantIdIn = null, bool? active, bool? suspended = null, long? priorityHigherThanOrEquals = null, 
+            string tenantIdIn = null, bool? active = null, bool? suspended = null, long? priorityHigherThanOrEquals = null, 
             long? priorityLowerThanOrEquals = null)
         {
             var request = new PendingExternalTasksRequest
@@ -84,7 +88,6 @@ namespace CamundaClientLibrary.Service
                 throw new EngineException("Could not get pending external tasks: " + response.ReasonPhrase + " and the http status code return " + response.StatusCode);
             }
         }
-    }
 
         public IList<ExternalTask> FetchAndLockTasks(string workerId, int maxTasks, string topicName, long lockDurationInMilliseconds, IEnumerable<string> variablesToFetch = null)
         { 
@@ -137,6 +140,7 @@ namespace CamundaClientLibrary.Service
             {
                 Console.WriteLine(ex.Message);
                 // TODO: Handle Exception, add back off
+                logger.Error(ex);
                 throw;
             }
         }    

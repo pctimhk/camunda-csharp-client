@@ -10,9 +10,11 @@ namespace CamundaClientLibrary.Test
         }
 
         [Test]
-        public void Test1()
+        public void TestStartupWithSingleThreadPolling()
         {
-            Assert.Pass();
+            var camundaEngineClient = new CamundaEngineClient();
+            camundaEngineClient.StartupWithSingleThreadPolling();
+
         }
     }
 }

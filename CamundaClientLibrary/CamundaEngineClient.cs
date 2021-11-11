@@ -1,5 +1,8 @@
-﻿using CamundaClientLibrary.Service;
+﻿using CamundaClientLibrary.Dto;
+using CamundaClientLibrary.DTO;
+using CamundaClientLibrary.Service;
 using CamundaClientLibrary.Worker;
+using Common.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +12,9 @@ namespace CamundaClientLibrary
 
     public class CamundaEngineClient
     {
+
+        private ILog logger = LogManager.GetLogger(typeof(CamundaEngineClient));
+
         public static string DEFAULT_URL = "http://localhost:8080/engine-rest/engine/default/";
         public static string COCKPIT_URL = "http://localhost:8080/camunda/app/cockpit/default/";
 
@@ -30,8 +36,45 @@ namespace CamundaClientLibrary
 
         public ExternalTaskService ExternalTaskService => new ExternalTaskService(_camundaClientHelper);
 
+        /// <summary>
+        /// Startup the 
+        /// </summary>
+        public void StartupWithSingleThreadPolling()
+        {
+            logger.Info("call StartupWithSingleThreadPolling");
+            this.StartWorkerListener();
+        }
+
+        public void StartWorkerListener()
+        {
+            var assembly = System.Reflection.Assembly.GetEntryAssembly();
+            var externalTaskWorkers = RetrieveExternalTaskWorkerInfo(assembly);
+
+            this.CheckWorkers(externalTaskWorkers);
+
+            var externalTaskListener = new ExternalTaskListener(ExternalTaskService, externalTaskWorkers);
+        }
+
+        public void CheckWorkers(IEnumerable<ExternalTaskWorkerInfo> workerInfos)
+        {
+            var exceptionWorkerInfosGroupping = workerInfos.GroupBy(x => x.TopicName).Where(grp => grp.Count() > 1);
+            var exceptionTopicNames = exceptionWorkerInfosGroupping.Select(grp => grp.Key);
+
+            if (exceptionTopicNames.Count() > 0)
+            {                
+                var exceptionWorkerInfos = exceptionWorkerInfosGroupping.SelectMany(x => x);
+                var exceptionWorkerAssemblyNamesString = string.Join(@",", exceptionWorkerInfos.Select(x => x.Type.FullName));
+                var exceptionTopicNamesString = string.Join(@",", exceptionTopicNames);
+
+                var message = string.Format(@"The assembly name {0} is configured same topic name {1}", exceptionWorkerAssemblyNamesString, exceptionTopicNamesString);
+                throw new ConfigurationException(message);
+            }
+        }
+
+
         public void Startup()
         {
+            logger.Info("call Startup");
             this.StartWorkers();
             this.RepositoryService.AutoDeploy();
         }
@@ -45,6 +88,8 @@ namespace CamundaClientLibrary
         {
             var assembly = System.Reflection.Assembly.GetEntryAssembly();
             var externalTaskWorkers = RetrieveExternalTaskWorkerInfo(assembly);
+
+            this.CheckWorkers(externalTaskWorkers);
 
             foreach (var taskWorkerInfo in externalTaskWorkers)
             {
