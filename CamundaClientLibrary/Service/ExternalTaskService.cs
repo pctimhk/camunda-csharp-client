@@ -8,6 +8,7 @@ using CamundaClientLibrary.Requests;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Serialization;
 using System.Threading;
+using CamundaClientLibrary.DTO;
 
 namespace CamundaClientLibrary.Service
 {
@@ -20,6 +21,70 @@ namespace CamundaClientLibrary.Service
         {
             this.helper = client;
         }
+
+        public bool GetServerStatus()
+        {
+            var http = helper.HttpClient();
+            var response = http.GetAsync(helper.RestUrl + "engine").Result;
+            if (response.IsSuccessStatusCode)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public IList<PendingExternalTask> GetPendingExternalTasks
+            (string externalTaskId = null, string topicName = null, string workerId= null, 
+            bool? locked = null, bool? notLocked = null, bool? withRetriesLeft = null, bool? noRetriesLeft = null, 
+            DateTime? lockExpirationAfter = null, DateTime? lockExpirationBefore = null, string activityId = null, 
+            string executionId = null, string processInstanceId = null, string processDefinitionId = null, 
+            string tenantIdIn = null, bool? active, bool? suspended = null, long? priorityHigherThanOrEquals = null, 
+            long? priorityLowerThanOrEquals = null)
+        {
+            var request = new PendingExternalTasksRequest
+            {
+                externalTaskId = externalTaskId,
+                topicName = topicName,
+                workerId = workerId,
+                locked = locked,
+                notLocked = notLocked,
+                withRetriesLeft = withRetriesLeft,
+                noRetriesLeft = noRetriesLeft,
+                lockExpirationAfter = lockExpirationAfter,
+                lockExpirationBefore = lockExpirationBefore,
+                activityId = activityId,
+                executionId = executionId,
+                processInstanceId = processInstanceId,
+                processDefinitionId = processDefinitionId,
+                tenantIdIn = tenantIdIn,
+                active = active,
+                suspended = suspended,
+                priorityHigherThanOrEquals = priorityHigherThanOrEquals,
+                priorityLowerThanOrEquals = priorityLowerThanOrEquals,
+            };
+
+            return this.GetPendingExternalTasks(request);
+        }
+
+        public IList<PendingExternalTask> GetPendingExternalTasks(PendingExternalTasksRequest request)
+        {
+            var http = helper.HttpClient();
+            var requestContent = new StringContent(JsonConvert.SerializeObject(request, new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() }), Encoding.UTF8, CamundaClientHelper.CONTENT_TYPE_JSON);
+            var response = http.PostAsync(helper.RestUrl + "external-task", requestContent).Result;
+            if (response.IsSuccessStatusCode)
+            {
+                var tasks = JsonConvert.DeserializeObject<IEnumerable<PendingExternalTask>>(response.Content.ReadAsStringAsync().Result);
+                return new List<PendingExternalTask>(tasks);
+            }
+            else
+            {
+                throw new EngineException("Could not get pending external tasks: " + response.ReasonPhrase + " and the http status code return " + response.StatusCode);
+            }
+        }
+    }
 
         public IList<ExternalTask> FetchAndLockTasks(string workerId, int maxTasks, string topicName, long lockDurationInMilliseconds, IEnumerable<string> variablesToFetch = null)
         { 
