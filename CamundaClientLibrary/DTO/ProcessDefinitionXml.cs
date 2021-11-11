@@ -1,4 +1,4 @@
-﻿namespace CamundaClient.Dto
+﻿namespace CamundaClientLibrary.Dto
 {
     public class ProcessDefinitionXml
     {

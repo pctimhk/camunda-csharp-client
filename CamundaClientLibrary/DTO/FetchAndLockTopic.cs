@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CamundaClient.Dto
+namespace CamundaClientLibrary.Dto
 {
     public class FetchAndLockTopic
     {

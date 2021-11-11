@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace CamundaClient.Worker
+namespace CamundaClientLibrary.Worker
 {
     public class UnrecoverableBusinessErrorException : Exception
     {

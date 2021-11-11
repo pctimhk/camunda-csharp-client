@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace CamundaClient.Dto
+namespace CamundaClientLibrary.Dto
 {
     public class ProcessInstance
     {

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace CamundaClient.Worker
+namespace CamundaClientLibrary.Worker
 {
     public class ExternalTaskWorker : IDisposable
     {

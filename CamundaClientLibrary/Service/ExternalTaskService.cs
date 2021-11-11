@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json.Serialization;
 using System.Threading;
 
-namespace CamundaClient.Service
+namespace CamundaClientLibrary.Service
 {
 
     public class ExternalTaskService

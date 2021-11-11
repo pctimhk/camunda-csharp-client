@@ -9,7 +9,7 @@ using System.Text;
 using CamundaClient.Requests;
 using Newtonsoft.Json.Serialization;
 
-namespace CamundaClient.Service
+namespace CamundaClientLibrary.Service
 {
 
     public class HumanTaskService

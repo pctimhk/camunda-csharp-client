@@ -1,7 +1,7 @@
 ﻿using CamundaClient.Dto;
 using System.Collections.Generic;
 
-namespace CamundaClient.Worker
+namespace CamundaClientLibrary.Worker
 {
 
     public interface IExternalTaskAdapter

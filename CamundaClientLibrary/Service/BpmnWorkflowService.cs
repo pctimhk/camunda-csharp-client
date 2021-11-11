@@ -8,7 +8,7 @@ using System.Text;
 using Newtonsoft.Json.Serialization;
 using System.Linq;
 
-namespace CamundaClient.Service
+namespace CamundaClientLibrary.Service
 {
 
     public class BpmnWorkflowService

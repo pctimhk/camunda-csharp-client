@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace CamundaClient
+namespace CamundaClientLibrary
 {
     [Serializable]
     public class EngineException : Exception

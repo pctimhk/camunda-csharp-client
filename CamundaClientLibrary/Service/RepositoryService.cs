@@ -10,7 +10,7 @@ using System.Reflection;
 using System.Text;
 using CamundaClient.Requests;
 
-namespace CamundaClient.Service
+namespace CamundaClientLibrary.Service
 {
 
     public class RepositoryService
