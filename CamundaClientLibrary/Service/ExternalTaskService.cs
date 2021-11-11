@@ -65,7 +65,7 @@ namespace CamundaClientLibrary.Service
                 }
                 else
                 {
-                    throw new EngineException("Could not fetch and lock tasks: " + response.ReasonPhrase);
+                    throw new EngineException("Could not fetch and lock tasks: " + response.ReasonPhrase + " and the http status code return " + response.StatusCode);
                 }
             }
             catch (Exception ex)
@@ -88,7 +88,7 @@ namespace CamundaClientLibrary.Service
             var response = http.PostAsync("external-task/" + externalTaskId + "/complete", requestContent).Result;
             if (!response.IsSuccessStatusCode)
             {
-                throw new EngineException("Could not complete external Task: " + response.ReasonPhrase);
+                throw new EngineException("Could not complete external Task: " + response.ReasonPhrase + " and the http status code return " + response.StatusCode);
             }
         }
 
@@ -104,7 +104,7 @@ namespace CamundaClientLibrary.Service
             var response = http.PostAsync("external-task/" + externalTaskId + "/bpmnError", requestContent).Result;
             if (!response.IsSuccessStatusCode)
             {
-                throw new EngineException("Could not report BPMN error for external Task: " + response.ReasonPhrase);
+                throw new EngineException("Could not report BPMN error for external Task: " + response.ReasonPhrase + " and the http status code return " + response.StatusCode);
             }
         }
 
@@ -122,8 +122,9 @@ namespace CamundaClientLibrary.Service
             var response = http.PostAsync("external-task/" + externalTaskId + "/failure", requestContent).Result;
             if (!response.IsSuccessStatusCode)
             {
-                throw new EngineException("Could not report failure for external Task: " + response.ReasonPhrase);
+                throw new EngineException("Could not report failure for external Task: " + response.ReasonPhrase + " and the http status code return " + response.StatusCode);
             }
         }
+
     }
 }
