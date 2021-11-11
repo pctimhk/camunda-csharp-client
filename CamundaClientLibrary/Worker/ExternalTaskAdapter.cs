@@ -1,4 +1,4 @@
-﻿using CamundaClient.Dto;
+﻿using CamundaClientLibrary.Dto;
 using System.Collections.Generic;
 
 namespace CamundaClientLibrary.Worker

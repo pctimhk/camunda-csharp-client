@@ -1,9 +1,9 @@
-﻿using CamundaClient.Dto;
+﻿using CamundaClientLibrary.Dto;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using CamundaClient.Requests;
+using CamundaClientLibrary.Requests;
 using System.Text;
 using Newtonsoft.Json.Serialization;
 using System.Linq;

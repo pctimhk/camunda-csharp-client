@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using CamundaClient.Worker;
+using CamundaClientLibrary.Worker;
 
 namespace CamundaClientLibrary.Dto
 {

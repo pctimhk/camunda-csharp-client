@@ -1,5 +1,5 @@
-﻿using CamundaClient.Dto;
-using CamundaClient.Service;
+﻿using CamundaClientLibrary.Dto;
+using CamundaClientLibrary.Service;
 using System;
 using System.Collections.Generic;
 using System.Threading;

@@ -1,5 +1,5 @@
-﻿using CamundaClient.Service;
-using CamundaClient.Worker;
+﻿using CamundaClientLibrary.Service;
+using CamundaClientLibrary.Worker;
 using System;
 using System.Collections.Generic;
 using System.Linq;
