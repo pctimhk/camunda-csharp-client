@@ -1,3 +1,9 @@
+# pctimhk branch will enhance the camunda client
+This branch will enhance the camunda client so support
+- support the single thread to poll the Camunda platform to improve the heavy load system
+- containerized the camunda client 
+- support HA architecture
+
 # A sample Camunda Client Class Library
 
 This Class Library [Camunda Client](CamundaClient) is not meant to be a re-usable, stable component. It is meant to serve as example and can be a starting point for your own code. Feel free to copy and modify the code, as it is released under Apache License you can do what you want with the code.
