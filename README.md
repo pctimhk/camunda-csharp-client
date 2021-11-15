@@ -1,8 +1,10 @@
 # pctimhk branch will enhance the camunda client
 This branch will enhance the camunda client so support
-- support the single thread to poll the Camunda platform to improve the heavy load system
-- containerized the camunda client 
-- support HA architecture
+- the single thread to poll the Camunda platform to improve the heavy load system
+- the containerized in Linux platform 
+- high available architecture
+- concurrency
+- configuration error detection
 
 # A sample Camunda Client Class Library
 
