@@ -1,5 +1,5 @@
 # pctimhk branch will enhance the camunda client
-This branch will enhance the camunda client so support
+This branch will enhance the camunda client to support
 - the single thread to poll the Camunda platform to improve the heavy load system
 - the containerized in Linux platform 
 - high available architecture
