@@ -55,22 +55,54 @@ namespace CamundaClientLibrary
             var externalTaskListener = new ExternalTaskListener(ExternalTaskService, externalTaskWorkers);
         }
 
-        public void CheckWorkers(IEnumerable<ExternalTaskWorkerInfo> workerInfos)
+        private static IEnumerable<Dto.ExternalTaskWorkerInfo> RetrieveExternalTaskWorkerInfo(System.Reflection.Assembly assembly)
         {
-            var exceptionWorkerInfosGroupping = workerInfos.GroupBy(x => x.TopicName).Where(grp => grp.Count() > 1);
-            var exceptionTopicNames = exceptionWorkerInfosGroupping.Select(grp => grp.Key);
+            // find all classes with CustomAttribute [ExternalTask("name")]
+            var externalTaskTypes = assembly.GetTypes().Where(x=> x.IsDefined(typeof(ExternalTaskAttribute), true));
 
-            if (exceptionTopicNames.Count() > 0)
-            {                
-                var exceptionWorkerInfos = exceptionWorkerInfosGroupping.SelectMany(x => x);
-                var exceptionWorkerAssemblyNamesString = string.Join(@",", exceptionWorkerInfos.Select(x => x.Type.FullName));
-                var exceptionTopicNamesString = string.Join(@",", exceptionTopicNames);
+            IEnumerable<ExternalTaskWorkerInfo> workInfos = new List<ExternalTaskWorkerInfo>();
 
-                var message = string.Format(@"The assembly name {0} is configured same topic name {1}", exceptionWorkerAssemblyNamesString, exceptionTopicNamesString);
-                throw new ConfigurationException(message);
+            foreach (var externalTaskType in externalTaskTypes)
+            {
+                var externalTaskAttributes = externalTaskType.GetCustomAttributes(typeof(ExternalTaskAttribute), true) as ExternalTaskAttribute[];
+                var externalTaskVariableRequirementsAttributes = externalTaskType.GetCustomAttributes(typeof(ExternalTaskVariableRequirementsAttribute), true) as ExternalTaskVariableRequirementsAttribute[];
+
+                foreach  (var externalTaskAttributeObject in externalTaskAttributes)
+                {
+                    var externalTaskAttribute = externalTaskAttributeObject as ExternalTaskAttribute;
+                    var workInfo = new ExternalTaskWorkerInfo();
+                    workInfo.Type = externalTaskType;
+                    workInfo.TaskAdapter = externalTaskType.GetConstructor(Type.EmptyTypes)?.Invoke(null) as IExternalTaskAdapter;
+                    workInfo.ProcessId = externalTaskAttribute.ProcessId;
+                    workInfo.ActivityId = externalTaskAttribute.ActivityId;
+                    workInfo.Retries = externalTaskAttribute.Retries;
+                    workInfo.RetryTimeout = externalTaskAttribute.RetryTimeout;
+                    workInfo.VariablesToFetch = externalTaskVariableRequirementsAttributes?.Where(x => x.VariablesToFetch != null).SelectMany(x=> x.VariablesToFetch).ToList();
+                }
             }
+
+            return workInfos;
         }
 
+        public void CheckWorkers(IEnumerable<ExternalTaskWorkerInfo> workerInfos)
+        {
+
+            var groupInfo = workerInfos.GroupBy(c=> new { c.ProcessId, c.ActivityId}).Select(g => new { ProcessId = g.Key.ProcessId, ActivityId = g.Key.ActivityId, Count = g.Count() });
+            var exceptionInfos = groupInfo.Where(x => x.Count > 1);
+
+            if (exceptionInfos.Count() > 0)
+            {
+                string message = "";
+
+                foreach (var exceptionInfo in exceptionInfos)
+                {
+                    var exceptionWorkerAssemblyNamesString = string.Join(@",", workerInfos.Where(x=> x.ProcessId == exceptionInfo.ProcessId && x.ActivityId == exceptionInfo.ActivityId).Select(x => x.Type.FullName));
+                    message += string.Format(@"The assembly name {0} is configured same process id {1} and activity id {2}. This library is not support different assembly point to same topic.\n", exceptionWorkerAssemblyNamesString, exceptionInfo.ProcessId, exceptionInfo.ActivityId);
+                }
+
+                throw new NotSupportedException(message);
+            }
+        }
 
         public void Startup()
         {
@@ -87,9 +119,7 @@ namespace CamundaClientLibrary
         public void StartWorkers()
         {
             var assembly = System.Reflection.Assembly.GetEntryAssembly();
-            var externalTaskWorkers = RetrieveExternalTaskWorkerInfo(assembly);
-
-            this.CheckWorkers(externalTaskWorkers);
+            var externalTaskWorkers = RetrieveExternalTaskTopicWorkerInfo(assembly);
 
             foreach (var taskWorkerInfo in externalTaskWorkers)
             {
@@ -100,7 +130,7 @@ namespace CamundaClientLibrary
             }
         }
 
-        private static IEnumerable<Dto.ExternalTaskWorkerInfo> RetrieveExternalTaskWorkerInfo(System.Reflection.Assembly assembly)
+        private static IEnumerable<Dto.ExternalTaskTopicWorkerInfo> RetrieveExternalTaskTopicWorkerInfo(System.Reflection.Assembly assembly)
         {
             // find all classes with CustomAttribute [ExternalTask("name")]
             var externalTaskWorkers =
@@ -108,7 +138,7 @@ namespace CamundaClientLibrary
                 let externalTaskTopicAttribute = t.GetCustomAttributes(typeof(ExternalTaskTopicAttribute), true).FirstOrDefault() as ExternalTaskTopicAttribute
                 let externalTaskVariableRequirements = t.GetCustomAttributes(typeof(ExternalTaskVariableRequirementsAttribute), true).FirstOrDefault() as ExternalTaskVariableRequirementsAttribute
                 where externalTaskTopicAttribute != null
-                select new Dto.ExternalTaskWorkerInfo
+                select new Dto.ExternalTaskTopicWorkerInfo
                 {
                     Type = t,
                     TopicName = externalTaskTopicAttribute.TopicName,

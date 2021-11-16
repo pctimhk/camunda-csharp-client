@@ -34,7 +34,7 @@ namespace CamundaClientLibrary.Worker
             this.maxDegreeOfParallelism = maxDegreeOfParallelism;
         }
 
-        public void StartWork(IEnumerable<ExternalTaskWorkerInfo> workerInfos)
+        public void StartWork(IEnumerable<ExternalTaskTopicWorkerInfo> workerInfos)
         {
 
             this.taskQueryTimer = new Timer(_ => DoPolling(), null, pollingIntervalInMilliseconds, Timeout.Infinite);
@@ -70,11 +70,11 @@ namespace CamundaClientLibrary.Worker
                         if (!string.IsNullOrEmpty(camundaPendingTask.id) && !string.IsNullOrEmpty(camundaPendingTask.topicName))
                         {
                             // find the matched assembly
-                            var workers = this.workerInfos.Where(x => x.TopicName == camundaPendingTask.topicName);
+                            var workers = this.workerInfos.Where(x => x.ProcessId == camundaPendingTask.processDefinitionKey && x.ActivityId == camundaPendingTask.activityId);
 
                             if (workers.Count() > 1)
                             {
-                                throw new ConfigurationException("More than one worker found in the assembly");
+                                throw new ConfigurationException("More than one adapter found in the assembly");
                             }
 
                             var worker = workers.Single();
@@ -113,9 +113,8 @@ namespace CamundaClientLibrary.Worker
             // schedule next run (if not stopped in between)
             if (taskQueryTimer != null)
             {
-                taskQueryTimer.Change(TimeSpan.FromMilliseconds(50), TimeSpan.FromMilliseconds(Timeout.Infinite));
+                taskQueryTimer.Change(TimeSpan.FromMilliseconds(this.pollingIntervalInMilliseconds), TimeSpan.FromMilliseconds(Timeout.Infinite));
             }
-
 
         }
 
@@ -123,7 +122,7 @@ namespace CamundaClientLibrary.Worker
         {
             Dictionary<string, object> resultVariables = new Dictionary<string, object>();
 
-            logger.Info($"Execute External Task from topic '{taskWorkerInfo.TopicName}': {externalTask}...");
+            logger.Info(string.Format(@"Execute external task for process id {0} and activity id {1}", taskWorkerInfo.ProcessId, taskWorkerInfo.ActivityId));
             try
             {
                 taskWorkerInfo.TaskAdapter.Execute(externalTask, ref resultVariables);

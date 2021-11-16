@@ -17,9 +17,9 @@ namespace CamundaClientLibrary.Worker
         private int maxTasksToFetchAtOnce = 10;
         private long lockDurationInMilliseconds = 1 * 60 * 1000; // 1 minute
         private ExternalTaskService externalTaskService;
-        private ExternalTaskWorkerInfo taskWorkerInfo;
+        private ExternalTaskTopicWorkerInfo taskWorkerInfo;
 
-        public ExternalTaskWorker(ExternalTaskService externalTaskService, ExternalTaskWorkerInfo taskWorkerInfo)
+        public ExternalTaskWorker(ExternalTaskService externalTaskService, ExternalTaskTopicWorkerInfo taskWorkerInfo)
         {
             this.externalTaskService = externalTaskService;
             this.taskWorkerInfo = taskWorkerInfo;
