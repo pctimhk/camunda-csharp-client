@@ -18,14 +18,15 @@ namespace CamundaClientLibrary
         public static string DEFAULT_URL = "http://localhost:8080/engine-rest/engine/default/";
         public static string COCKPIT_URL = "http://localhost:8080/camunda/app/cockpit/default/";
 
+        private ExternalTaskListener _listener;
         private IList<ExternalTaskWorker> _workers = new List<ExternalTaskWorker>();
         private CamundaClientHelper _camundaClientHelper;
 
-        public CamundaEngineClient() : this(new Uri(DEFAULT_URL), null, null) { }
+        public CamundaEngineClient() : this(new Uri(DEFAULT_URL), null, null, null) { }
 
-        public CamundaEngineClient(Uri restUrl, string userName, string password)
+        public CamundaEngineClient(Uri restUrl, string userName, string password, System.Reflection.Assembly assembly = null)
         {
-            _camundaClientHelper = new CamundaClientHelper(restUrl, userName, password);
+            _camundaClientHelper = new CamundaClientHelper(restUrl, userName, password, assembly);
         }
 
         public BpmnWorkflowService BpmnWorkflowService => new BpmnWorkflowService(_camundaClientHelper);
@@ -45,22 +46,42 @@ namespace CamundaClientLibrary
             this.StartWorkerListener();
         }
 
+        public void ShutdownSingleThreadPolling()
+        {
+            logger.Info("call ShutdownSingleThreadPolling");
+            this.StopWorkerListener();
+        }
+
         public void StartWorkerListener()
         {
-            var assembly = System.Reflection.Assembly.GetEntryAssembly();
+            System.Reflection.Assembly assembly = this._camundaClientHelper.Assembly;
+            if (assembly == null)
+                assembly = System.Reflection.Assembly.GetEntryAssembly();
             var externalTaskWorkers = RetrieveExternalTaskWorkerInfo(assembly);
 
             this.CheckWorkers(externalTaskWorkers);
 
-            var externalTaskListener = new ExternalTaskListener(ExternalTaskService, externalTaskWorkers);
+            _listener = new ExternalTaskListener(ExternalTaskService, externalTaskWorkers);
+            _listener.StartWork();
+        }
+
+
+        public void StopWorkerListener()
+        {
+            _listener.StopWork();
+        }
+
+        private static IEnumerable<Type> GetTypesWithAttribute(System.Reflection.Assembly assembly, Type attribute)
+        {
+            return assembly.GetTypes().Where(type => type.GetCustomAttributes(attribute, true).Length > 0).ToList();
         }
 
         private static IEnumerable<Dto.ExternalTaskWorkerInfo> RetrieveExternalTaskWorkerInfo(System.Reflection.Assembly assembly)
         {
             // find all classes with CustomAttribute [ExternalTask("name")]
-            var externalTaskTypes = assembly.GetTypes().Where(x=> x.IsDefined(typeof(ExternalTaskAttribute), true));
+            var externalTaskTypes = GetTypesWithAttribute(assembly, typeof(ExternalTaskAttribute));
 
-            IEnumerable<ExternalTaskWorkerInfo> workInfos = new List<ExternalTaskWorkerInfo>();
+            var workInfos = new List<ExternalTaskWorkerInfo>();
 
             foreach (var externalTaskType in externalTaskTypes)
             {
@@ -78,6 +99,7 @@ namespace CamundaClientLibrary
                     workInfo.Retries = externalTaskAttribute.Retries;
                     workInfo.RetryTimeout = externalTaskAttribute.RetryTimeout;
                     workInfo.VariablesToFetch = externalTaskVariableRequirementsAttributes?.Where(x => x.VariablesToFetch != null).SelectMany(x=> x.VariablesToFetch).ToList();
+                    workInfos.Add(workInfo);
                 }
             }
 
@@ -97,7 +119,7 @@ namespace CamundaClientLibrary
                 foreach (var exceptionInfo in exceptionInfos)
                 {
                     var exceptionWorkerAssemblyNamesString = string.Join(@",", workerInfos.Where(x=> x.ProcessId == exceptionInfo.ProcessId && x.ActivityId == exceptionInfo.ActivityId).Select(x => x.Type.FullName));
-                    message += string.Format(@"The assembly name {0} is configured same process id {1} and activity id {2}. This library is not support different assembly point to same topic.\n", exceptionWorkerAssemblyNamesString, exceptionInfo.ProcessId, exceptionInfo.ActivityId);
+                    message += string.Format(@"The assembly name {0} is configured same process id {1} and same activity id {2}. This library is not support different assembly point to same topic.\n", exceptionWorkerAssemblyNamesString, exceptionInfo.ProcessId, exceptionInfo.ActivityId);
                 }
 
                 throw new NotSupportedException(message);

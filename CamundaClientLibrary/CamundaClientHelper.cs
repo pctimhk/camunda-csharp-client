@@ -15,14 +15,16 @@ namespace CamundaClientLibrary
         public const string CONTENT_TYPE_JSON = "application/json";
         public string RestUsername { get; }
         public string RestPassword { get; }
+        public System.Reflection.Assembly Assembly { get; }
 
         private static HttpClient client;
 
-        public CamundaClientHelper(Uri restUrl, string username, string password)
+        public CamundaClientHelper(Uri restUrl, string username, string password, System.Reflection.Assembly assembly)
         {
             this.RestUrl = restUrl;
             this.RestUsername = username;
             this.RestPassword = password;
+            this.Assembly = assembly;
         }
 
         public HttpClient HttpClient()

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace CamundaClientLibrary.Test.Workers
 {
-    [ExternalTask("Process_CamundaEngineLibrary.Test", "Activity_B")]
+    [ExternalTask("Process_CamundaEngineLibrary.Test", "Activity_A")]
     public class TaskAAdapter : IExternalTaskAdapter
     {
 

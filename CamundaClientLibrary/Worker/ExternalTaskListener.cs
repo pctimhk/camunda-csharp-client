@@ -34,7 +34,7 @@ namespace CamundaClientLibrary.Worker
             this.maxDegreeOfParallelism = maxDegreeOfParallelism;
         }
 
-        public void StartWork(IEnumerable<ExternalTaskTopicWorkerInfo> workerInfos)
+        public void StartWork()
         {
 
             this.taskQueryTimer = new Timer(_ => DoPolling(), null, pollingIntervalInMilliseconds, Timeout.Infinite);
