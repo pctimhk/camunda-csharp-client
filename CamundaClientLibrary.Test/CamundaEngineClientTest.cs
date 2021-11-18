@@ -12,7 +12,7 @@ namespace CamundaClientLibrary.Test
         [SetUp]
         public void Setup()
         {
-            camundaEngineClient = new CamundaEngineClient(new System.Uri(@"http://192.168.17.158:29090/engine-rest/engine/default/"), null, null, System.Reflection.Assembly.GetExecutingAssembly());
+            camundaEngineClient = new CamundaEngineClient(new System.Uri(@"http://192.168.17.158:19090/engine-rest/engine/default/"), null, null, System.Reflection.Assembly.GetExecutingAssembly());
 
             // deploy BPMN
             //camundaEngineClient.RepositoryService.Deploy(@"CamundaEngineLibraryTest", @"BPMN\CamundaEngineLibraryTest.bpmn");
